@@ -43,7 +43,11 @@ function SetupScreen({ onStartGame }) {
     <div className="setup-screen fade-in">
       <div className="setup-header">
         <div className="game-logo">
-          <span className="logo-icon pulse">☢️</span>
+          <div className="logo-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19.8 18.4L14 10.67V6.5l1.35-1.69c.26-.33.03-.81-.39-.81H9.04c-.42 0-.65.48-.39.81L10 6.5v4.17L4.2 18.4c-.49.66-.02 1.6.8 1.6h14c.82 0 1.29-.94.8-1.6z"/>
+            </svg>
+          </div>
           <h1 className="game-title">RADIATION BAR</h1>
           <p className="game-subtitle">Trò chơi phóng xạ - Ai sẽ sống sót?</p>
         </div>
@@ -52,18 +56,23 @@ function SetupScreen({ onStartGame }) {
       <div className="setup-content">
         <div className="setup-section">
           <div className="section-header">
-            <span className="section-icon">👥</span>
+            <div className="section-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+              </svg>
+            </div>
             <h3>Thiết lập người chơi</h3>
           </div>
           
           <div className="player-count-selector">
-            <label>Số lượng người chơi:</label>
-            <div className="count-buttons">
+            <label htmlFor="player-count">Số lượng người chơi:</label>
+            <div className="count-buttons" role="group" aria-label="Chọn số lượng người chơi">
               {[3, 4, 5].map(count => (
                 <button
                   key={count}
                   className={`count-btn ${playerCount === count ? 'active' : ''}`}
                   onClick={() => handlePlayerCountChange({ target: { value: count } })}
+                  aria-pressed={playerCount === count}
                 >
                   {count} người
                 </button>
@@ -71,58 +80,34 @@ function SetupScreen({ onStartGame }) {
             </div>
           </div>
 
-          <div className="player-inputs-grid">
+          <div className="player-inputs-grid" role="group" aria-label="Nhập tên người chơi">
             {playerNames.map((name, index) => (
               <div key={index} className="player-input-card">
-                <div className="input-icon">🎮</div>
+                <div className="input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
                 <input 
                   type="text" 
+                  id={`player-name-${index}`}
                   value={name}
                   onChange={(e) => handleNameChange(index, e.target.value)}
-                  placeholder={`Người chơi ${index + 1}`}
+                  placeholder={`Tên người chơi ${index + 1}`}
                   className="player-name-input"
+                  aria-label={`Tên người chơi ${index + 1}`}
+                  maxLength={20}
                 />
               </div>
             ))}
           </div>
         </div>
-
-        <div className="rules-section">
-          <div className="section-header">
-            <span className="section-icon">📖</span>
-            <h3>Luật chơi cơ bản</h3>
-          </div>
-          
-          <div className="rules-grid">
-            <div className="rule-card">
-              <div className="rule-icon">❤️</div>
-              <h4>Mạng sống</h4>
-              <p>Mỗi người có <strong>3 Tim</strong> và 3 lá chắn bảo vệ</p>
-            </div>
-
-            <div className="rule-card">
-              <div className="rule-icon">🎯</div>
-              <h4>Lượt chơi</h4>
-              <p>Đọc lý thuyết → Bắt bài/Tin → Bóp cò</p>
-            </div>
-
-            <div className="rule-card">
-              <div className="rule-icon">☢️</div>
-              <h4>Tia phóng xạ</h4>
-              <p><span className="alpha-badge">α -1❤️</span> <span className="beta-badge">β -2❤️</span> <span className="gamma-badge">γ -3❤️</span></p>
-            </div>
-
-            <div className="rule-card">
-              <div className="rule-icon">🛡️</div>
-              <h4>Lá chắn</h4>
-              <p>📄 chặn α | 🔩 chặn α+β | 🔘 chặn tất cả</p>
-            </div>
-          </div>
-        </div>
       </div>
       
       <button className="btn btn-start" onClick={handleStart}>
-        <span className="btn-icon">🚀</span>
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/>
+        </svg>
         <span>BẮT ĐẦU GAME</span>
       </button>
     </div>

@@ -1,14 +1,19 @@
 import { useState } from 'react'
+import LandingPage from './components/LandingPage'
 import QuestionManager from './components/QuestionManager'
 import SetupScreen from './components/SetupScreen'
 import GameScreen from './components/GameScreen'
 import WinnerScreen from './components/WinnerScreen'
 
 function App() {
-  const [gameState, setGameState] = useState('questions') // 'questions', 'setup', 'playing', 'winner'
+  const [gameState, setGameState] = useState('landing') // 'landing', 'questions', 'setup', 'playing', 'winner'
   const [players, setPlayers] = useState([])
   const [winner, setWinner] = useState(null)
   const [customQuestions, setCustomQuestions] = useState([])
+
+  const handleStartFromLanding = () => {
+    setGameState('questions')
+  }
 
   const handleQuestionsReady = (questions) => {
     setCustomQuestions(questions)
@@ -41,12 +46,16 @@ function App() {
   const resetGame = () => {
     setPlayers([])
     setWinner(null)
-    setGameState('questions')
+    setGameState('landing')
     setCustomQuestions([])
   }
 
   return (
     <div className="app">
+      {gameState === 'landing' && (
+        <LandingPage onStart={handleStartFromLanding} />
+      )}
+      
       {gameState === 'questions' && (
         <QuestionManager onQuestionsReady={handleQuestionsReady} />
       )}
