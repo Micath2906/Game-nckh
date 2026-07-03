@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import './styles.css'
 
 function SetupScreen({ onStartGame }) {
   const [playerCount, setPlayerCount] = useState(3)
@@ -39,49 +40,91 @@ function SetupScreen({ onStartGame }) {
   }
 
   return (
-    <div className="setup-screen">
-      <h1>🎲 RADIATION BAR</h1>
-      <h2>Trò chơi phóng xạ - Ai sẽ sống sót?</h2>
-      
-      <div className="player-inputs">
-        <div className="player-input">
-          <label>Số lượng người chơi (3-5):</label>
-          <input 
-            type="number" 
-            min="3" 
-            max="5" 
-            value={playerCount}
-            onChange={handlePlayerCountChange}
-          />
+    <div className="setup-screen fade-in">
+      <div className="setup-header">
+        <div className="game-logo">
+          <span className="logo-icon pulse">☢️</span>
+          <h1 className="game-title">RADIATION BAR</h1>
+          <p className="game-subtitle">Trò chơi phóng xạ - Ai sẽ sống sót?</p>
         </div>
-        
-        {playerNames.map((name, index) => (
-          <div key={index} className="player-input">
-            <label>Tên người chơi {index + 1}:</label>
-            <input 
-              type="text" 
-              value={name}
-              onChange={(e) => handleNameChange(index, e.target.value)}
-              placeholder={`Người chơi ${index + 1}`}
-            />
+      </div>
+      
+      <div className="setup-content">
+        <div className="setup-section">
+          <div className="section-header">
+            <span className="section-icon">👥</span>
+            <h3>Thiết lập người chơi</h3>
           </div>
-        ))}
+          
+          <div className="player-count-selector">
+            <label>Số lượng người chơi:</label>
+            <div className="count-buttons">
+              {[3, 4, 5].map(count => (
+                <button
+                  key={count}
+                  className={`count-btn ${playerCount === count ? 'active' : ''}`}
+                  onClick={() => handlePlayerCountChange({ target: { value: count } })}
+                >
+                  {count} người
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="player-inputs-grid">
+            {playerNames.map((name, index) => (
+              <div key={index} className="player-input-card">
+                <div className="input-icon">🎮</div>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => handleNameChange(index, e.target.value)}
+                  placeholder={`Người chơi ${index + 1}`}
+                  className="player-name-input"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rules-section">
+          <div className="section-header">
+            <span className="section-icon">📖</span>
+            <h3>Luật chơi cơ bản</h3>
+          </div>
+          
+          <div className="rules-grid">
+            <div className="rule-card">
+              <div className="rule-icon">❤️</div>
+              <h4>Mạng sống</h4>
+              <p>Mỗi người có <strong>3 Tim</strong> và 3 lá chắn bảo vệ</p>
+            </div>
+
+            <div className="rule-card">
+              <div className="rule-icon">🎯</div>
+              <h4>Lượt chơi</h4>
+              <p>Đọc lý thuyết → Bắt bài/Tin → Bóp cò</p>
+            </div>
+
+            <div className="rule-card">
+              <div className="rule-icon">☢️</div>
+              <h4>Tia phóng xạ</h4>
+              <p><span className="alpha-badge">α -1❤️</span> <span className="beta-badge">β -2❤️</span> <span className="gamma-badge">γ -3❤️</span></p>
+            </div>
+
+            <div className="rule-card">
+              <div className="rule-icon">🛡️</div>
+              <h4>Lá chắn</h4>
+              <p>📄 chặn α | 🔩 chặn α+β | 🔘 chặn tất cả</p>
+            </div>
+          </div>
+        </div>
       </div>
       
-      <button className="btn btn-primary" onClick={handleStart}>
-        🎮 BẮT ĐẦU GAME
+      <button className="btn btn-start" onClick={handleStart}>
+        <span className="btn-icon">🚀</span>
+        <span>BẮT ĐẦU GAME</span>
       </button>
-      
-      <div style={{marginTop: '30px', padding: '20px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', fontSize: '0.9em'}}>
-        <h3 style={{marginBottom: '10px'}}>📖 Luật chơi ngắn gọn:</h3>
-        <ul style={{textAlign: 'left', lineHeight: '1.8'}}>
-          <li>Mỗi người có 3 ❤️ và 3 lá chắn (Giấy, Nhôm, Chì)</li>
-          <li>Mỗi lượt: Đọc lý thuyết → Bắt bài hoặc tin tưởng → Bóp cò</li>
-          <li>Trúng đạn Alpha (α) -1❤️, Beta (β) -2❤️, Gamma (γ) -3❤️</li>
-          <li>Dùng lá chắn để miễn nhiễm: Giấy chặn α, Nhôm chặn α+β, Chì chặn tất cả</li>
-          <li>Người sống sót cuối cùng chiến thắng!</li>
-        </ul>
-      </div>
     </div>
   )
 }

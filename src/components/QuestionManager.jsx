@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import './styles.css'
 
 function QuestionManager({ onQuestionsReady }) {
   const [questions, setQuestions] = useState([])
@@ -144,117 +145,155 @@ function QuestionManager({ onQuestionsReady }) {
   }
 
   return (
-    <div className="setup-screen">
-      <h1>📝 QUẢN LÝ CÂU HỎI</h1>
-      <h2>Thêm câu hỏi lý thuyết cho game</h2>
-      
-      <div className="question-form">
-        <div className="player-input">
-          <label>Câu phát biểu lý thuyết:</label>
-          <textarea 
-            value={currentQuestion}
-            onChange={(e) => setCurrentQuestion(e.target.value)}
-            placeholder="VD: Tia Alpha có khả năng đâm xuyên mạnh nhất"
-            rows="3"
-            style={{resize: 'vertical'}}
-          />
-        </div>
-
-        <div className="player-input">
-          <label>Câu này đúng hay sai?</label>
-          <select value={isTrue} onChange={(e) => setIsTrue(e.target.value === 'true')}>
-            <option value="true">✅ ĐÚNG</option>
-            <option value="false">❌ SAI</option>
-          </select>
-        </div>
-
-        <div className="player-input">
-          <label>Giải thích (tùy chọn):</label>
-          <textarea 
-            value={explanation}
-            onChange={(e) => setExplanation(e.target.value)}
-            placeholder="VD: Tia Gamma có khả năng đâm xuyên mạnh nhất"
-            rows="2"
-            style={{resize: 'vertical'}}
-          />
-        </div>
-
-        <div style={{display: 'flex', gap: '10px'}}>
-          <button className="btn btn-primary" onClick={addQuestion} style={{flex: 1}}>
-            ➕ Thêm Câu Hỏi
-          </button>
-          <button className="btn btn-success" onClick={loadDefaultQuestions} style={{flex: 1}}>
-            📚 Tải Câu Mẫu
-          </button>
+    <div className="setup-screen fade-in">
+      <div className="setup-header">
+        <div className="game-logo">
+          <span className="logo-icon">📝</span>
+          <h1 className="game-title">QUẢN LÝ CÂU HỎI</h1>
+          <p className="game-subtitle">Tạo ngân hàng câu hỏi lý thuyết cho trò chơi</p>
         </div>
       </div>
+      
+      <div className="setup-content">
+        <div className="question-form-section">
+          <div className="section-header">
+            <span className="section-icon">✍️</span>
+            <h3>Thêm câu hỏi mới</h3>
+          </div>
 
-      {questions.length > 0 && (
-        <div className="questions-list" style={{marginTop: '30px'}}>
-          <h3 style={{marginBottom: '15px'}}>
-            Danh sách câu hỏi ({questions.length})
-          </h3>
-          
-          {questions.map((q, index) => (
-            <div 
-              key={q.id} 
-              className="question-item"
-              style={{
-                background: 'rgba(255,255,255,0.1)',
-                padding: '15px',
-                marginBottom: '10px',
-                borderRadius: '10px',
-                borderLeft: `4px solid ${q.isTrue ? '#4facfe' : '#f5576c'}`
-              }}
-            >
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start'}}>
-                <div style={{flex: 1}}>
-                  <div style={{fontWeight: 'bold', marginBottom: '5px'}}>
-                    {index + 1}. {q.statement}
-                  </div>
-                  <div style={{fontSize: '0.85em', opacity: 0.8, marginBottom: '5px'}}>
-                    <span style={{
-                      background: q.isTrue ? '#4facfe' : '#f5576c',
-                      padding: '2px 8px',
-                      borderRadius: '5px',
-                      marginRight: '10px'
-                    }}>
-                      {q.isTrue ? '✅ ĐÚNG' : '❌ SAI'}
-                    </span>
-                    {q.explanation}
-                  </div>
-                  <div style={{fontSize: '0.8em', opacity: 0.6, fontStyle: 'italic'}}>
-                    Câu đảo: "{q.invertedStatement}"
-                  </div>
-                </div>
-                <button 
-                  className="btn btn-danger" 
-                  onClick={() => deleteQuestion(q.id)}
-                  style={{padding: '5px 15px', marginLeft: '10px'}}
+          <div className="form-grid">
+            <div className="form-group full-width">
+              <label className="form-label">
+                <span className="label-icon">💬</span>
+                Câu phát biểu lý thuyết
+              </label>
+              <textarea 
+                value={currentQuestion}
+                onChange={(e) => setCurrentQuestion(e.target.value)}
+                placeholder="VD: Tia Alpha có khả năng đâm xuyên mạnh nhất trong ba loại tia phóng xạ"
+                rows="3"
+                className="form-textarea"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">✓</span>
+                Tính đúng/sai
+              </label>
+              <div className="truth-selector">
+                <button
+                  className={`truth-btn true ${isTrue ? 'active' : ''}`}
+                  onClick={() => setIsTrue(true)}
                 >
-                  🗑️
+                  <span className="truth-icon">✅</span>
+                  <span>ĐÚNG</span>
+                </button>
+                <button
+                  className={`truth-btn false ${!isTrue ? 'active' : ''}`}
+                  onClick={() => setIsTrue(false)}
+                >
+                  <span className="truth-icon">❌</span>
+                  <span>SAI</span>
                 </button>
               </div>
             </div>
-          ))}
+
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">📚</span>
+                Giải thích (tùy chọn)
+              </label>
+              <textarea 
+                value={explanation}
+                onChange={(e) => setExplanation(e.target.value)}
+                placeholder="VD: Tia Gamma có khả năng đâm xuyên mạnh nhất, không phải tia Alpha"
+                rows="2"
+                className="form-textarea"
+              />
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button className="btn btn-primary" onClick={addQuestion}>
+              <span className="btn-icon">➕</span>
+              <span>Thêm Câu Hỏi</span>
+            </button>
+            <button className="btn btn-secondary" onClick={loadDefaultQuestions}>
+              <span className="btn-icon">📚</span>
+              <span>Tải Câu Mẫu</span>
+            </button>
+          </div>
         </div>
-      )}
 
-      {questions.length >= 5 && (
-        <button 
-          className="btn btn-primary" 
-          onClick={handleStart}
-          style={{marginTop: '20px', fontSize: '1.2em', padding: '15px 40px'}}
-        >
-          ✅ TIẾP TỤC ({questions.length} câu hỏi)
-        </button>
-      )}
+        {questions.length > 0 && (
+          <div className="questions-list-section">
+            <div className="section-header">
+              <span className="section-icon">📋</span>
+              <h3>Danh sách câu hỏi ({questions.length})</h3>
+              {questions.length >= 5 && (
+                <span className="ready-badge pulse">✓ Đủ điều kiện</span>
+              )}
+            </div>
+            
+            <div className="questions-list">
+              {questions.map((q, index) => (
+                <div 
+                  key={q.id} 
+                  className={`question-card ${q.isTrue ? 'true' : 'false'}`}
+                >
+                  <div className="question-number">{index + 1}</div>
+                  
+                  <div className="question-content">
+                    <div className="question-statement">
+                      {q.statement}
+                    </div>
+                    
+                    <div className="question-meta">
+                      <span className={`truth-badge ${q.isTrue ? 'true' : 'false'}`}>
+                        {q.isTrue ? '✅ ĐÚNG' : '❌ SAI'}
+                      </span>
+                      <span className="explanation-text">
+                        {q.explanation}
+                      </span>
+                    </div>
 
-      {questions.length > 0 && questions.length < 5 && (
-        <p style={{marginTop: '20px', color: '#FFD700', textAlign: 'center'}}>
-          Cần thêm ít nhất {5 - questions.length} câu hỏi nữa để bắt đầu
-        </p>
-      )}
+                    <div className="question-inverted">
+                      <span className="inverted-label">Câu đảo:</span>
+                      <span className="inverted-text">"{q.invertedStatement}"</span>
+                    </div>
+                  </div>
+
+                  <button 
+                    className="delete-btn" 
+                    onClick={() => deleteQuestion(q.id)}
+                    title="Xóa câu hỏi"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {questions.length > 0 && questions.length < 5 && (
+          <div className="status-message warning">
+            <span className="status-icon">⚠️</span>
+            <span>Cần thêm ít nhất {5 - questions.length} câu hỏi nữa để bắt đầu (tối thiểu 5 câu)</span>
+          </div>
+        )}
+
+        {questions.length >= 5 && (
+          <button 
+            className="btn btn-start" 
+            onClick={handleStart}
+          >
+            <span className="btn-icon">✅</span>
+            <span>TIẾP TỤC VỚI {questions.length} CÂU HỎI</span>
+          </button>
+        )}
+      </div>
     </div>
   )
 }

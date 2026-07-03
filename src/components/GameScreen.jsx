@@ -7,10 +7,11 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0)
   const [chamber, setChamber] = useState([])
   const [currentTheory, setCurrentTheory] = useState(null)
-  const [gamePhase, setGamePhase] = useState('draw') // 'draw', 'read', 'challenge', 'shoot'
+  const [gamePhase, setGamePhase] = useState('draw') // 'draw', 'waiting', 'challenge', 'shoot'
   const [selectedShield, setSelectedShield] = useState(null)
   const [logs, setLogs] = useState([])
-  const [challenger, setChallenger] = useState(null)
+  const [shooterIndex, setShooterIndex] = useState(null)
+  const [timer, setTimer] = useState(5)
 
   // Sử dụng câu hỏi custom hoặc mặc định
   const questionsToUse = customQuestions.length > 0 ? customQuestions : THEORIES
@@ -20,25 +21,35 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
     resetChamber()
   }, [])
 
+  // Timer countdown
+  useEffect(() => {
+    if (gamePhase === 'waiting' && timer > 0) {
+      const countdown = setTimeout(() => setTimer(timer - 1), 1000)
+      return () => clearTimeout(countdown)
+    } else if (gamePhase === 'waiting' && timer === 0) {
+      // Hết giờ, không ai bắt bài
+      handleAccept()
+    }
+  }, [gamePhase, timer])
+
   // Check for winner
   useEffect(() => {
     const alivePlayers = players.filter(p => p.isAlive)
-    if (alivePlayers.length === 1) {
+    if (alivePlayers.length === 1 && gamePhase !== 'draw') {
       setTimeout(() => {
         onGameEnd(alivePlayers[0])
       }, 2000)
     }
-  }, [players, onGameEnd])
+  }, [players, onGameEnd, gamePhase])
 
   const resetChamber = () => {
-    // 6 bullets: 5 empty, 1 radiation
     const radiationType = RADIATION_TYPES[Math.floor(Math.random() * RADIATION_TYPES.length)]
     const newChamber = Array(6).fill(null)
     const randomIndex = Math.floor(Math.random() * 6)
     newChamber[randomIndex] = radiationType
     
     setChamber(newChamber)
-    addLog(`🔫 Ổ đạn đã được nạp lại! Loại tia: ??? (${radiationType.damage}❤️)`, 'info')
+    addLog(`🔫 Ổ đạn mới! Loại tia bí mật đã được nạp...`, 'info')
   }
 
   const addLog = (message, type = 'info') => {
@@ -52,120 +63,108 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
   const drawTheory = () => {
     const theory = questionsToUse[Math.floor(Math.random() * questionsToUse.length)]
     setCurrentTheory(theory)
-    setGamePhase('read')
-    addLog(`📖 ${players[currentPlayerIndex].name} đã rút lá bài lý thuyết`, 'info')
-  }
-
-  const readTheory = (readCorrectly) => {
-    const actualStatement = currentTheory.statement
-    const invertedStatement = currentTheory.invertedStatement
-    
-    // Người chơi chọn đọc đúng hay sai
-    const statementToRead = readCorrectly ? actualStatement : invertedStatement
-    const actuallyTrue = readCorrectly ? currentTheory.isTrue : !currentTheory.isTrue
-    
-    // Lưu thông tin về câu đã đọc
-    setCurrentTheory({
-      ...currentTheory,
-      readStatement: statementToRead,
-      readCorrectly: readCorrectly,
-      actuallyTrue: actuallyTrue
-    })
-    
-    setGamePhase('challenge')
-    addLog(`📖 ${players[currentPlayerIndex].name} đọc: "${statementToRead}"`, 'info')
+    setGamePhase('waiting')
+    setTimer(5)
+    addLog(`📖 ${players[currentPlayerIndex].name} đã rút bài và đọc câu lý thuyết!`, 'info')
+    addLog(`⏱️ Còn 5 giây để bắt bài...`, 'info')
   }
 
   const handleChallenge = () => {
-    // Check if the statement read was actually false (người đọc nói sai)
-    const statementIsFalse = !currentTheory.actuallyTrue
+    setGamePhase('challenge')
+    setTimer(0)
+  }
+
+  const handleChallengeResult = (isStatementTrue) => {
+    // isStatementTrue: câu người chơi ĐỌC ra có đúng với thực tế không
+    const actuallyCorrect = currentTheory.isTrue === isStatementTrue
     
-    if (statementIsFalse) {
-      // Challenger wins - bắt bài đúng
+    if (!actuallyCorrect) {
+      // Người đọc NÓI DỐI - người bắt bài thắng
       const radiationType = chamber.find(b => b !== null)
       if (radiationType) {
         const hint = radiationType.hints[Math.floor(Math.random() * radiationType.hints.length)]
         
         const updatedPlayers = [...players]
-        updatedPlayers[currentPlayerIndex].hints.push(hint)
-        setPlayers(updatedPlayers)
-        
-        addLog(`✅ BẮT BÀI ĐÚNG! Câu lý thuyết SAI. Nhận gợi ý: "${hint}"`, 'safe')
+        const allAlivePlayers = updatedPlayers.filter(p => p.isAlive)
+        // Cho hint cho người bắt bài (random một người còn sống khác người hiện tại)
+        const otherPlayers = allAlivePlayers.filter((_, idx) => idx !== currentPlayerIndex)
+        if (otherPlayers.length > 0) {
+          const randomPlayer = otherPlayers[Math.floor(Math.random() * otherPlayers.length)]
+          randomPlayer.hints.push(hint)
+          setPlayers(updatedPlayers)
+          addLog(`✅ BẮT BÀI ĐÚNG! ${players[currentPlayerIndex].name} đã nói dối!`, 'safe')
+          addLog(`💡 Người bắt bài nhận gợi ý: "${hint}"`, 'safe')
+        }
       }
       
-      addLog(`🔫 ${players[currentPlayerIndex].name} (người đọc) phải bóp cò!`, 'damage')
+      addLog(`🔫 ${players[currentPlayerIndex].name} phải bóp cò!`, 'damage')
+      setShooterIndex(currentPlayerIndex)
       setGamePhase('shoot')
     } else {
-      // Challenger loses - bắt bài sai (câu vốn đúng)
-      addLog(`❌ BẮT BÀI SAI! Câu lý thuyết là ĐÚNG!`, 'damage')
-      addLog(`🔫 Người bắt bài phải tự bóp cò!`, 'damage')
+      // Người đọc NÓI THẬT - người bắt bài thua
+      addLog(`❌ BẮT BÀI SAI! ${players[currentPlayerIndex].name} đã nói thật!`, 'damage')
+      addLog(`🔫 Người bắt bài phải bóp cò!`, 'damage')
       
-      // Người bắt bài phải bóp cò - chuyển sang họ
-      setChallenger(currentPlayerIndex)
+      // Người bắt bài phải bóp cò - giả sử là người kế tiếp
+      let challengerIdx = (currentPlayerIndex + 1) % players.length
+      while (!players[challengerIdx].isAlive) {
+        challengerIdx = (challengerIdx + 1) % players.length
+      }
+      setShooterIndex(challengerIdx)
       setGamePhase('shoot')
     }
   }
 
   const handleAccept = () => {
-    // Move to next player
-    addLog(`✅ ${players[currentPlayerIndex].name} chấp nhận lý thuyết`, 'safe')
+    addLog(`✅ Không ai bắt bài. Lượt chơi an toàn!`, 'safe')
     nextPlayer()
   }
 
   const handleShoot = () => {
-    const availableBullets = chamber.filter((_, index) => chamber[index] !== undefined)
+    const availableBullets = chamber.map((b, i) => b !== undefined ? i : -1).filter(i => i !== -1)
     
     if (availableBullets.length === 0) {
       resetChamber()
       return
     }
 
-    // Random bullet from remaining
-    const bulletIndex = Math.floor(Math.random() * chamber.length)
-    const bullet = chamber[bulletIndex]
+    const randomBulletIndex = availableBullets[Math.floor(Math.random() * availableBullets.length)]
+    const bullet = chamber[randomBulletIndex]
 
-    // Remove bullet from chamber
     const newChamber = [...chamber]
-    newChamber[bulletIndex] = undefined
+    newChamber[randomBulletIndex] = undefined
     setChamber(newChamber)
 
-    // Người bóp cò có thể là người đọc hoặc người bắt bài
-    const shooterIndex = challenger !== null ? challenger : currentPlayerIndex
     const currentPlayer = players[shooterIndex]
 
     if (bullet === null) {
-      // Empty bullet - safe
       addLog(`💨 ${currentPlayer.name} bóp cò... ĐẠN TRỐNG! May mắn!`, 'safe')
       nextPlayer()
     } else {
-      // Hit radiation
       let damage = bullet.damage
       const shieldUsed = selectedShield
 
-      // Check shield protection
       if (shieldUsed) {
         if (shieldUsed === 'paper' && bullet.type === 'alpha') {
           damage = 0
-          addLog(`🛡️ ${currentPlayer.name} dùng Giấy - Miễn nhiễm hoàn toàn Alpha!`, 'safe')
+          addLog(`🛡️ ${currentPlayer.name} dùng Giấy - Chặn hoàn toàn ${bullet.symbol}!`, 'safe')
         } else if (shieldUsed === 'aluminum' && (bullet.type === 'alpha' || bullet.type === 'beta')) {
           damage = 0
-          addLog(`🛡️ ${currentPlayer.name} dùng Nhôm - Miễn nhiễm hoàn toàn ${bullet.type}!`, 'safe')
+          addLog(`🛡️ ${currentPlayer.name} dùng Nhôm - Chặn hoàn toàn ${bullet.symbol}!`, 'safe')
         } else if (shieldUsed === 'lead') {
           damage = 0
-          addLog(`🛡️ ${currentPlayer.name} dùng Chì - Miễn nhiễm hoàn toàn mọi tia!`, 'safe')
+          addLog(`🛡️ ${currentPlayer.name} dùng Chì - Chặn hoàn toàn mọi tia!`, 'safe')
         } else {
-          addLog(`🛡️ ${currentPlayer.name} dùng lá chắn nhưng không đủ mạnh chống ${bullet.symbol}!`, 'damage')
+          addLog(`🛡️ Lá chắn không đủ mạnh chống ${bullet.symbol}!`, 'damage')
         }
 
-        // Remove shield
         const updatedPlayers = [...players]
         updatedPlayers[shooterIndex].shields[shieldUsed] = false
         setPlayers(updatedPlayers)
       }
 
-      // Apply damage
       if (damage > 0) {
-        addLog(`☢️ ${currentPlayer.name} trúng đạn ${bullet.symbol} (${bullet.name})! -${damage}❤️`, 'damage')
+        addLog(`☢️ ${currentPlayer.name} trúng ${bullet.symbol} ${bullet.name}! -${damage}❤️`, 'damage')
         
         const updatedPlayers = [...players]
         updatedPlayers[shooterIndex].hearts -= damage
@@ -179,7 +178,6 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
         setPlayers(updatedPlayers)
       }
 
-      // Reset chamber after radiation hit
       setTimeout(() => {
         resetChamber()
       }, 1000)
@@ -188,16 +186,15 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
     }
 
     setSelectedShield(null)
-    setGamePhase('draw')
+    setShooterIndex(null)
   }
 
   const nextPlayer = () => {
     setCurrentTheory(null)
-    setChallenger(null)
+    setShooterIndex(null)
     setSelectedShield(null)
     setGamePhase('draw')
     
-    // Find next alive player
     let nextIndex = (currentPlayerIndex + 1) % players.length
     let attempts = 0
     
@@ -215,155 +212,160 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
   return (
     <div className="game-screen">
       <div className="game-header">
-        <h1>🎲 RADIATION BAR</h1>
-        <p style={{fontSize: '1.2em', marginTop: '10px'}}>
-          Lượt của: <strong style={{color: '#FFD700'}}>{currentPlayer?.name}</strong>
-        </p>
-      </div>
-
-      <div className="chamber-info">
-        <h3>🔫 Ổ Đạn</h3>
-        <p>Số đạn còn lại: {bulletsLeft}/6</p>
-        <div className="bullets">
-          {chamber.map((bullet, index) => (
-            <div 
-              key={index} 
-              className={`bullet ${bullet === undefined ? 'used' : ''}`}
-            />
-          ))}
+        <h1>☢️ RADIATION BAR</h1>
+        <div className="current-turn">
+          Lượt: <span className="player-highlight">{currentPlayer?.name}</span>
         </div>
       </div>
 
-      <div className="players-grid">
-        {players.map((player, index) => (
-          <PlayerCard 
-            key={player.id}
-            player={player}
-            isActive={index === currentPlayerIndex}
-          />
-        ))}
+      <div className="game-container">
+        <div className="left-panel">
+          <div className="chamber-section">
+            <h3>🔫 Ổ Đạn</h3>
+            <div className="bullets">
+              {chamber.map((bullet, index) => (
+                <div 
+                  key={index} 
+                  className={`bullet ${bullet === undefined ? 'used' : ''} ${bullet !== null && bullet !== undefined ? 'live' : ''}`}
+                  title={bullet === undefined ? 'Đã bắn' : bullet === null ? 'Trống' : 'Phóng xạ'}
+                />
+              ))}
+            </div>
+            <p className="bullets-count">Còn {bulletsLeft}/6 viên</p>
+          </div>
+
+          <div className="players-section">
+            <h3>👥 Người Chơi</h3>
+            <div className="players-list-compact">
+              {players.map((player, index) => (
+                <PlayerCard 
+                  key={player.id}
+                  player={player}
+                  isActive={index === currentPlayerIndex}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="main-panel">
+          <div className="game-stage">
+            {gamePhase === 'draw' && (
+              <div className="stage-content fade-in">
+                <div className="stage-icon">🎴</div>
+                <h2>Rút Lá Bài Lý Thuyết</h2>
+                <p>Người chơi sẽ rút bài và đọc to câu lý thuyết</p>
+                <button className="btn btn-primary btn-large" onClick={drawTheory}>
+                  🎴 RÚT BÀI
+                </button>
+              </div>
+            )}
+
+            {gamePhase === 'waiting' && (
+              <div className="stage-content fade-in">
+                <div className="stage-icon pulse">⏱️</div>
+                <h2>Giai Đoạn Thách Thức</h2>
+                <div className="theory-card-display">
+                  <p className="theory-statement">
+                    "{currentTheory.statement}"
+                  </p>
+                  <p className="theory-truth" style={{color: currentTheory.isTrue ? '#4facfe' : '#f5576c'}}>
+                    {currentTheory.isTrue ? '✅ Thực tế: ĐÚNG' : '❌ Thực tế: SAI'}
+                  </p>
+                </div>
+                <div className="timer-display">{timer}s</div>
+                <p style={{marginBottom: '20px'}}>Người khác có thể bắt bài!</p>
+                <div className="action-buttons">
+                  <button className="btn btn-danger" onClick={handleChallenge}>
+                    ⚠️ BẮT BÀI!
+                  </button>
+                  <button className="btn btn-success" onClick={handleAccept}>
+                    ✅ Chấp Nhận
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {gamePhase === 'challenge' && (
+              <div className="stage-content fade-in">
+                <div className="stage-icon">🤔</div>
+                <h2>Kiểm Tra Lá Bài</h2>
+                <p style={{marginBottom: '20px'}}>
+                  Người chơi <strong>{currentPlayer.name}</strong> đã đọc câu gì?
+                </p>
+                <div className="action-buttons">
+                  <button 
+                    className="btn btn-success" 
+                    onClick={() => handleChallengeResult(true)}
+                  >
+                    ✅ Nói ĐÚNG (Câu đúng)
+                  </button>
+                  <button 
+                    className="btn btn-danger" 
+                    onClick={() => handleChallengeResult(false)}
+                  >
+                    ❌ Nói DỐI (Câu sai)
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {gamePhase === 'shoot' && (
+              <div className="stage-content fade-in">
+                <div className="stage-icon shake">🔫</div>
+                <h2>Giai Đoạn Bóp Cò</h2>
+                <p className="shooter-name">
+                  {players[shooterIndex]?.name} phải bóp cò!
+                </p>
+
+                <div className="shield-selection">
+                  <h4>🛡️ Chọn Lá Chắn (Tùy chọn)</h4>
+                  <div className="shield-buttons">
+                    <button 
+                      className={`shield-btn ${selectedShield === 'paper' ? 'active' : ''}`}
+                      onClick={() => setSelectedShield(selectedShield === 'paper' ? null : 'paper')}
+                      disabled={!players[shooterIndex]?.shields.paper}
+                    >
+                      <div className="shield-icon">📄</div>
+                      <div>Giấy</div>
+                      <div className="shield-desc">Chặn α</div>
+                    </button>
+                    <button 
+                      className={`shield-btn ${selectedShield === 'aluminum' ? 'active' : ''}`}
+                      onClick={() => setSelectedShield(selectedShield === 'aluminum' ? null : 'aluminum')}
+                      disabled={!players[shooterIndex]?.shields.aluminum}
+                    >
+                      <div className="shield-icon">🔩</div>
+                      <div>Nhôm</div>
+                      <div className="shield-desc">Chặn α, β</div>
+                    </button>
+                    <button 
+                      className={`shield-btn ${selectedShield === 'lead' ? 'active' : ''}`}
+                      onClick={() => setSelectedShield(selectedShield === 'lead' ? null : 'lead')}
+                      disabled={!players[shooterIndex]?.shields.lead}
+                    >
+                      <div className="shield-icon">🔘</div>
+                      <div>Chì</div>
+                      <div className="shield-desc">Chặn tất cả</div>
+                    </button>
+                  </div>
+                </div>
+
+                <button 
+                  className="btn btn-danger btn-large" 
+                  onClick={handleShoot}
+                >
+                  🔫 BÓP CÒ
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="right-panel">
+          <GameLog logs={logs} />
+        </div>
       </div>
-
-      <div className="game-actions">
-        {gamePhase === 'draw' && (
-          <div className="theory-section">
-            <h3>📖 Giai đoạn Lý Thuyết</h3>
-            <div className="theory-display">
-              <button className="btn btn-primary" onClick={drawTheory}>
-                🎴 Rút Lá Bài Lý Thuyết
-              </button>
-            </div>
-          </div>
-        )}
-
-        {gamePhase === 'read' && (
-          <div className="theory-section">
-            <h3>📖 Lá Bài Của Bạn</h3>
-            <div className="theory-display" style={{flexDirection: 'column', gap: '15px'}}>
-              <div style={{background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '10px'}}>
-                <p style={{fontSize: '0.9em', opacity: 0.7, marginBottom: '10px'}}>
-                  ⚠️ CHỈ BẠN NHÌN THẤY LÁ BÀI NÀY
-                </p>
-                <p style={{fontWeight: 'bold', fontSize: '1.1em'}}>
-                  "{currentTheory.statement}"
-                </p>
-                <p style={{fontSize: '0.9em', marginTop: '10px', color: currentTheory.isTrue ? '#4facfe' : '#f5576c'}}>
-                  {currentTheory.isTrue ? '✅ Câu này ĐÚNG' : '❌ Câu này SAI'}
-                </p>
-              </div>
-              
-              <p style={{fontSize: '0.95em', opacity: 0.9}}>
-                🎭 Bạn có thể đọc ĐÚNG hoặc đọc SAI để lừa người khác!
-              </p>
-              
-              <div style={{display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap'}}>
-                <button className="btn btn-success" onClick={() => readTheory(true)}>
-                  ✅ Đọc ĐÚNG nguyên văn<br/>
-                  <span style={{fontSize: '0.85em', opacity: 0.8}}>
-                    (Trung thực)
-                  </span>
-                </button>
-                <button className="btn btn-danger" onClick={() => readTheory(false)}>
-                  🎭 Đọc câu ĐẢO NGƯỢC<br/>
-                  <span style={{fontSize: '0.85em', opacity: 0.8}}>
-                    (Lừa bịp)
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {gamePhase === 'challenge' && (
-          <div className="challenge-section">
-            <h3>⚠️ Giai đoạn Thách Thức</h3>
-            <div className="theory-display">
-              <p style={{fontStyle: 'italic'}}>"{currentTheory.readStatement}"</p>
-            </div>
-            <p style={{marginBottom: '15px'}}>Các người chơi khác có 5 giây để bắt bài...</p>
-            <div className="challenge-buttons">
-              <button className="btn btn-danger" onClick={handleChallenge}>
-                ❌ SAI RỒI! (Bắt bài)
-              </button>
-              <button className="btn btn-success" onClick={handleAccept}>
-                ✅ Tin Tưởng / Không Biết
-              </button>
-            </div>
-          </div>
-        )}
-
-        {gamePhase === 'shoot' && (
-          <div className="challenge-section">
-            <h3>🔫 Giai đoạn Bóp Cò</h3>
-            <p style={{marginBottom: '20px', fontSize: '1.1em'}}>
-              {players[challenger !== null ? challenger : currentPlayerIndex].name} phải bóp cò!
-            </p>
-
-            <div className="shield-selection">
-              <h4>🛡️ Chọn lá chắn bảo vệ (tùy chọn)</h4>
-              <div className="shield-buttons">
-                <button 
-                  className={`shield-btn ${selectedShield === 'paper' ? 'active' : ''}`}
-                  onClick={() => setSelectedShield('paper')}
-                  disabled={!players[challenger !== null ? challenger : currentPlayerIndex].shields.paper}
-                >
-                  📄 Giấy (Chặn α)
-                </button>
-                <button 
-                  className={`shield-btn ${selectedShield === 'aluminum' ? 'active' : ''}`}
-                  onClick={() => setSelectedShield('aluminum')}
-                  disabled={!players[challenger !== null ? challenger : currentPlayerIndex].shields.aluminum}
-                >
-                  🔩 Nhôm (Chặn α, β)
-                </button>
-                <button 
-                  className={`shield-btn ${selectedShield === 'lead' ? 'active' : ''}`}
-                  onClick={() => setSelectedShield('lead')}
-                  disabled={!players[challenger !== null ? challenger : currentPlayerIndex].shields.lead}
-                >
-                  🔘 Chì (Chặn tất cả)
-                </button>
-                <button 
-                  className="shield-btn"
-                  onClick={() => setSelectedShield(null)}
-                >
-                  ❌ Không dùng
-                </button>
-              </div>
-            </div>
-
-            <button 
-              className="btn btn-danger" 
-              onClick={handleShoot}
-              style={{marginTop: '20px', fontSize: '1.2em'}}
-            >
-              🔫 BÓP CÒ
-            </button>
-          </div>
-        )}
-      </div>
-
-      <GameLog logs={logs} />
     </div>
   )
 }
