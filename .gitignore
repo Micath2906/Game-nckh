@@ -29,4 +29,6 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
-
+.cursor/
+.kiro/
+idea.md

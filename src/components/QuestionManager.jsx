@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import './styles.css'
+import { getQuestionsBySubject } from '../data/subjectQuestions'
 
-function QuestionManager({ onQuestionsReady }) {
+function QuestionManager({ onQuestionsReady, onBack, subject }) {
   const [questions, setQuestions] = useState([])
   const [currentQuestion, setCurrentQuestion] = useState('')
   const [isTrue, setIsTrue] = useState(true)
@@ -57,18 +58,8 @@ function QuestionManager({ onQuestionsReady }) {
   }
 
   const loadDefaultQuestions = () => {
-    const defaultQuestions = [
-      { id: 1, statement: 'Tia Alpha có khả năng đâm xuyên mạnh nhất', invertedStatement: 'Tia Alpha có khả năng đâm xuyên yếu nhất', isTrue: false, explanation: 'Sai. Tia Gamma mới là mạnh nhất' },
-      { id: 2, statement: 'Tia Beta là dòng electron chuyển động nhanh', invertedStatement: 'Tia Beta không phải là dòng electron', isTrue: true, explanation: 'Đúng. Tia Beta thực chất là các electron' },
-      { id: 3, statement: 'Tia Gamma bị lệch trong điện trường', invertedStatement: 'Tia Gamma không bị lệch trong điện trường', isTrue: false, explanation: 'Sai. Tia Gamma là sóng điện từ, không mang điện' },
-      { id: 4, statement: 'Tấm chì có thể chặn được tia Alpha', invertedStatement: 'Tấm chì không thể chặn được tia Alpha', isTrue: true, explanation: 'Đúng. Chì có thể chặn mọi loại tia' },
-      { id: 5, statement: 'Giấy có thể chặn tia Gamma', invertedStatement: 'Giấy không thể chặn được tia Gamma', isTrue: false, explanation: 'Sai. Giấy chỉ chặn được tia Alpha' },
-      { id: 6, statement: 'Tia Alpha mang điện tích dương', invertedStatement: 'Tia Alpha mang điện tích âm', isTrue: true, explanation: 'Đúng. Tia Alpha mang điện tích +2e' },
-      { id: 7, statement: 'Tia Beta mang điện tích âm', invertedStatement: 'Tia Beta mang điện tích dương', isTrue: true, explanation: 'Đúng. Tia Beta là electron nên mang điện âm' },
-      { id: 8, statement: 'Tia Gamma là sóng điện từ có tần số rất cao', invertedStatement: 'Tia Gamma không phải là sóng điện từ', isTrue: true, explanation: 'Đúng. Tia Gamma là dạng sóng điện từ năng lượng cao' },
-      { id: 9, statement: 'Tia Alpha là hạt nhân Heli', invertedStatement: 'Tia Alpha không phải là hạt nhân Heli', isTrue: true, explanation: 'Đúng. Tia Alpha chính là hạt nhân nguyên tử Heli' },
-      { id: 10, statement: 'Tia Beta có khối lượng lớn hơn tia Alpha', invertedStatement: 'Tia Beta có khối lượng nhỏ hơn tia Alpha', isTrue: false, explanation: 'Sai. Electron nhỏ hơn nhiều so với hạt Alpha' }
-    ]
+    // Load câu hỏi mặc định theo môn học
+    const defaultQuestions = getQuestionsBySubject(subject?.id || 'physics')
     setQuestions(defaultQuestions)
   }
 
@@ -76,6 +67,19 @@ function QuestionManager({ onQuestionsReady }) {
     <div className="qm-screen">
       {/* Compact Header */}
       <div className="qm-header">
+        {onBack && (
+          <button className="btn-back" onClick={onBack} style={{ marginBottom: '16px' }}>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+          </button>
+        )}
+        {subject && (
+          <div className="subject-badge" style={{ background: subject.color, marginBottom: '12px' }}>
+            <span>{subject.icon}</span>
+            <span>{subject.name}</span>
+          </div>
+        )}
         <div className="qm-breadcrumb">
           <span className="breadcrumb-item">Landing</span>
           <span className="breadcrumb-sep">›</span>

@@ -11,7 +11,7 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
   const [selectedShield, setSelectedShield] = useState(null)
   const [logs, setLogs] = useState([])
   const [shooterIndex, setShooterIndex] = useState(null)
-  const [timer, setTimer] = useState(5)
+  const [timer, setTimer] = useState(10)
 
   const questionsToUse = customQuestions.length > 0 ? customQuestions : THEORIES
 
@@ -59,9 +59,9 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
     const theory = questionsToUse[Math.floor(Math.random() * questionsToUse.length)]
     setCurrentTheory(theory)
     setGamePhase('waiting')
-    setTimer(5)
+    setTimer(10)
     addLog(`${players[currentPlayerIndex].name} đã rút bài và đọc câu lý thuyết!`, 'info')
-    addLog(`Còn 5 giây để bắt bài...`, 'info')
+    addLog(`Còn 10 giây để bắt bài...`, 'info')
   }
 
   const handleChallenge = () => {
