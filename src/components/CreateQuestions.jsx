@@ -1,6 +1,17 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './styles.css'
 import { getQuestionsBySubject } from '../data/subjectQuestions'
+import AiQuestionGenerator from './AiQuestionGenerator'
+import {
+  loadCustomSubjects,
+  saveCustomSubjects,
+  loadQuestionsBySubject,
+  saveQuestionsBySubject,
+  loadSelectedSubjectId,
+  saveSelectedSubjectId,
+  loadSelectedGrade,
+  saveSelectedGrade
+} from '../utils/customDataStorage'
 
 const SUBJECTS_LIST = [
   { id: 'physics', name: 'Vật Lý', icon: '⚛️', color: '#4F46E5' },
@@ -13,19 +24,53 @@ const SUBJECTS_LIST = [
 
 const GRADE_OPTIONS = ['Tất cả', 'Lớp 10', 'Lớp 11', 'Lớp 12', 'Đại học']
 
+function resolveQuestionsForSubject(subjectId) {
+  const saved = loadQuestionsBySubject(subjectId)
+  if (saved !== null) return saved
+  if (subjectId.startsWith('custom-')) return []
+  return getQuestionsBySubject(subjectId)
+}
+
 function CreateQuestions({ onQuestionsReady, onBack }) {
+  const [customSubjects, setCustomSubjects] = useState(() => loadCustomSubjects())
   const [selectedSubject, setSelectedSubject] = useState(null)
-  const [selectedGrade, setSelectedGrade] = useState('Tất cả')
+  const [selectedGrade, setSelectedGrade] = useState(() => loadSelectedGrade())
   const [questions, setQuestions] = useState([])
   const [currentQuestion, setCurrentQuestion] = useState('')
   const [isTrue, setIsTrue] = useState(true)
   const [showCreateSubject, setShowCreateSubject] = useState(false)
-  const [customSubjects, setCustomSubjects] = useState([])
   const [newSubjectName, setNewSubjectName] = useState('')
   const [newSubjectIcon, setNewSubjectIcon] = useState('📖')
   const fileInputRef = useRef(null)
+  const [showAiPanel, setShowAiPanel] = useState(false)
 
   const allSubjects = [...SUBJECTS_LIST, ...customSubjects]
+
+  useEffect(() => {
+    const lastSubjectId = loadSelectedSubjectId()
+    if (!lastSubjectId) return
+
+    const subject = [...SUBJECTS_LIST, ...customSubjects].find((s) => s.id === lastSubjectId)
+    if (subject) {
+      setSelectedSubject(subject)
+      setQuestions(resolveQuestionsForSubject(subject.id))
+    }
+  }, [])
+
+  useEffect(() => {
+    saveCustomSubjects(customSubjects)
+  }, [customSubjects])
+
+  useEffect(() => {
+    if (selectedSubject) {
+      saveQuestionsBySubject(selectedSubject.id, questions)
+      saveSelectedSubjectId(selectedSubject.id)
+    }
+  }, [questions, selectedSubject])
+
+  useEffect(() => {
+    saveSelectedGrade(selectedGrade)
+  }, [selectedGrade])
 
   const handleCreateSubject = () => {
     if (!newSubjectName.trim()) {
@@ -49,9 +94,7 @@ function CreateQuestions({ onQuestionsReady, onBack }) {
 
   const handleSubjectClick = (subject) => {
     setSelectedSubject(subject)
-    // Load câu hỏi mặc định
-    const defaultQuestions = getQuestionsBySubject(subject.id)
-    setQuestions(defaultQuestions)
+    setQuestions(resolveQuestionsForSubject(subject.id))
   }
 
   const addQuestion = () => {
@@ -107,6 +150,11 @@ function CreateQuestions({ onQuestionsReady, onBack }) {
     event.target.value = ''
   }
 
+  const handleAiQuestionsAdd = (newQuestions) => {
+    setQuestions([...questions, ...newQuestions])
+    alert(`Đã thêm ${newQuestions.length} câu hỏi từ AI!`)
+  }
+
   const handleStart = () => {
     if (questions.length < 5) {
       alert('Cần ít nhất 5 câu hỏi để bắt đầu!')
@@ -132,7 +180,7 @@ function CreateQuestions({ onQuestionsReady, onBack }) {
           </button>
           <div className="create-title-section">
             <h1 className="create-main-title">Tạo Bộ Câu Hỏi</h1>
-            <p className="create-subtitle">Chọn môn, thêm câu hỏi hoặc tải file lên</p>
+            <p className="create-subtitle">Chọn môn, thêm câu hỏi, tải file hoặc dùng AI</p>
           </div>
         </div>
 
@@ -221,7 +269,7 @@ function CreateQuestions({ onQuestionsReady, onBack }) {
             </div>
 
             {/* Actions */}
-            <div className="actions-row">
+            <div className="actions-row actions-row-three">
               {/* Upload File */}
               <button className="action-card upload" onClick={() => fileInputRef.current?.click()}>
                 <div className="action-icon">
@@ -241,6 +289,22 @@ function CreateQuestions({ onQuestionsReady, onBack }) {
                 style={{ display: 'none' }}
                 onChange={handleFileUpload}
               />
+
+              {/* AI Generator */}
+              <button
+                className={`action-card upload ai ${showAiPanel ? 'active' : ''}`}
+                onClick={() => setShowAiPanel(!showAiPanel)}
+              >
+                <div className="action-icon ai">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/>
+                  </svg>
+                </div>
+                <div className="action-content">
+                  <h4>Tạo bằng AI</h4>
+                  <p>PDF tuỳ chọn + Gemini</p>
+                </div>
+              </button>
 
               {/* Add Question Form */}
               <div className="action-card add">
@@ -276,6 +340,14 @@ function CreateQuestions({ onQuestionsReady, onBack }) {
                 </div>
               </div>
             </div>
+
+            {showAiPanel && (
+              <AiQuestionGenerator
+                subjectName={selectedSubject?.name}
+                onAddQuestions={handleAiQuestionsAdd}
+                onClose={() => setShowAiPanel(false)}
+              />
+            )}
 
             {/* Questions List */}
             <div className="questions-list-compact">

@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/Micath2906/Game-nckh#readme",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
