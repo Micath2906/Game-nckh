@@ -12,6 +12,7 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
   const [logs, setLogs] = useState([])
   const [shooterIndex, setShooterIndex] = useState(null)
   const [timer, setTimer] = useState(10)
+  const [waveNumber, setWaveNumber] = useState(1) // Đợt sóng phóng xạ
 
   const questionsToUse = customQuestions.length > 0 ? customQuestions : THEORIES
 
@@ -39,12 +40,16 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
 
   const resetChamber = () => {
     const radiationType = RADIATION_TYPES[Math.floor(Math.random() * RADIATION_TYPES.length)]
-    const newChamber = Array(6).fill(null)
-    const randomIndex = Math.floor(Math.random() * 6)
+    
+    // Tính số viên theo đợt sóng: 4 -> 3 -> 2 -> 1
+    const chamberSize = Math.max(1, 5 - waveNumber)
+    const newChamber = Array(chamberSize).fill(null)
+    const randomIndex = Math.floor(Math.random() * chamberSize)
     newChamber[randomIndex] = radiationType
     
     setChamber(newChamber)
-    addLog('Ổ đạn mới! Loại tia bí mật đã được nạp...', 'info')
+    addLog(`🌊 Đợt sóng ${waveNumber} mới: ${chamberSize} vị trí đo đạc`, 'info')
+    setWaveNumber(prev => prev + 1)
   }
 
   const addLog = (message, type = 'info') => {
@@ -73,28 +78,46 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
     const actuallyCorrect = currentTheory.isTrue === isStatementTrue
     
     if (!actuallyCorrect) {
+      // Người đọc bài nói dối → người đọc bài phải đo đạc
       const radiationType = chamber.find(b => b !== null)
       if (radiationType) {
         const hint = radiationType.hints[Math.floor(Math.random() * radiationType.hints.length)]
         
+        // Tạo phương trình phân rã ngẫu nhiên
+        const N0 = Math.pow(2, Math.floor(Math.random() * 3) + 2) // 4, 8, 16
+        const T = Math.floor(Math.random() * 2) + 1 // 1 hoặc 2
+        const turnsUntilBullet = Math.floor(Math.random() * 3) + 2 // 2-4 lượt
+        const N = N0 * Math.pow(0.5, turnsUntilBullet / T)
+        
+        const equation = `N = ${N0}·(1/2)^(t/${T}), biết N = ${N.toFixed(1)}. Tính t (số lượt tới viên lỗi)?`
+        
+        // Gợi ý riêng tư - chỉ người bắt bài thấy
         const updatedPlayers = [...players]
-        const allAlivePlayers = updatedPlayers.filter(p => p.isAlive)
-        const otherPlayers = allAlivePlayers.filter((_, idx) => idx !== currentPlayerIndex)
-        if (otherPlayers.length > 0) {
-          const randomPlayer = otherPlayers[Math.floor(Math.random() * otherPlayers.length)]
-          randomPlayer.hints.push(hint)
-          setPlayers(updatedPlayers)
-          addLog(`BẮT BÀI ĐÚNG! ${players[currentPlayerIndex].name} đã nói dối!`, 'safe')
-          addLog(`Người bắt bài nhận gợi ý: "${hint}"`, 'safe')
+        let challengerIdx = (currentPlayerIndex + 1) % players.length
+        while (!players[challengerIdx].isAlive) {
+          challengerIdx = (challengerIdx + 1) % players.length
         }
+        
+        updatedPlayers[challengerIdx].hints.push({ 
+          hint, 
+          equation, 
+          answer: turnsUntilBullet,
+          radiationType: radiationType.type, // Thông tin loại tia (riêng tư)
+          waveInfo: `Đợt ${waveNumber}: ${radiationType.name} (${radiationType.symbol})`
+        })
+        setPlayers(updatedPlayers)
+        
+        addLog(`✅ BẮT BÀI ĐÚNG! ${players[currentPlayerIndex].name} đã nói dối!`, 'safe')
+        addLog(`Người bắt bài nhận gợi ý bí mật!`, 'safe')
       }
       
-      addLog(`${players[currentPlayerIndex].name} phải bóp cò!`, 'damage')
+      addLog(`${players[currentPlayerIndex].name} phải đi đo đạc!`, 'damage')
       setShooterIndex(currentPlayerIndex)
       setGamePhase('shoot')
     } else {
-      addLog(`BẮT BÀI SAI! ${players[currentPlayerIndex].name} đã nói thật!`, 'damage')
-      addLog(`Người bắt bài phải bóp cò!`, 'damage')
+      // Người bắt bài sai → người bắt bài phải đo đạc
+      addLog(`❌ BẮT BÀI SAI! ${players[currentPlayerIndex].name} đã nói thật!`, 'damage')
+      addLog(`Người bắt bài phải đi đo đạc!`, 'damage')
       
       let challengerIdx = (currentPlayerIndex + 1) % players.length
       while (!players[challengerIdx].isAlive) {
@@ -128,7 +151,7 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
     const currentPlayer = players[shooterIndex]
 
     if (bullet === null) {
-      addLog(`${currentPlayer.name} bóp cò... ĐẠN TRỐNG! May mắn!`, 'safe')
+      addLog(`${currentPlayer.name} đo đạc... AN TOÀN! Không có sóng phóng xạ!`, 'safe')
       nextPlayer()
     } else {
       let damage = bullet.damage
@@ -137,15 +160,15 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
       if (shieldUsed) {
         if (shieldUsed === 'paper' && bullet.type === 'alpha') {
           damage = 0
-          addLog(`${currentPlayer.name} dùng Giấy - Chặn hoàn toàn ${bullet.symbol}!`, 'safe')
+          addLog(`${currentPlayer.name} dùng Giáp Giấy - Chặn hoàn toàn ${bullet.symbol}!`, 'safe')
         } else if (shieldUsed === 'aluminum' && (bullet.type === 'alpha' || bullet.type === 'beta')) {
           damage = 0
-          addLog(`${currentPlayer.name} dùng Nhôm - Chặn hoàn toàn ${bullet.symbol}!`, 'safe')
+          addLog(`${currentPlayer.name} dùng Giáp Nhôm - Chặn hoàn toàn ${bullet.symbol}!`, 'safe')
         } else if (shieldUsed === 'lead') {
           damage = 0
-          addLog(`${currentPlayer.name} dùng Chì - Chặn hoàn toàn mọi tia!`, 'safe')
+          addLog(`${currentPlayer.name} dùng Giáp Chì - Chặn hoàn toàn mọi tia!`, 'safe')
         } else {
-          addLog(`Lá chắn không đủ mạnh chống ${bullet.symbol}!`, 'damage')
+          addLog(`Giáp không đủ mạnh chống ${bullet.symbol}!`, 'damage')
         }
 
         const updatedPlayers = [...players]
@@ -154,7 +177,7 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
       }
 
       if (damage > 0) {
-        addLog(`${currentPlayer.name} trúng ${bullet.symbol} ${bullet.name}! -${damage}❤`, 'damage')
+        addLog(`${currentPlayer.name} trúng sóng ${bullet.name}! -${damage}❤`, 'damage')
         
         const updatedPlayers = [...players]
         updatedPlayers[shooterIndex].hearts -= damage
@@ -202,12 +225,15 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
   return (
     <div className="game-screen">
       <div className="game-header">
-        <h1>GETTER SAVER</h1>
+        <h1>☢️ PHÓNG XẠ BAR</h1>
         <div className="current-turn">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
           </svg>
           Lượt: <span className="player-highlight">{currentPlayer?.name}</span>
+        </div>
+        <div style={{fontSize: '14px', marginTop: '8px', color: '#9CA3AF'}}>
+          🌊 Đợt sóng {waveNumber} | Ổ còn {bulletsLeft} viên
         </div>
       </div>
 
@@ -216,20 +242,23 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
           <div className="chamber-section">
             <h3>
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 5h10v2h1V5c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2h1V5zm10 14H7v-4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v4zm2-6v6c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2v-6h2v6h10v-6h2zM7 9v4h10V9H7z"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
-              Ổ Đạn
+              Đợt Sóng Phóng Xạ
             </h3>
             <div className="bullets">
               {chamber.map((bullet, index) => (
                 <div 
                   key={index} 
                   className={`bullet ${bullet === undefined ? 'used' : ''} ${bullet !== null && bullet !== undefined ? 'live' : ''}`}
-                  title={bullet === undefined ? 'Đã bắn' : bullet === null ? 'Trống' : 'Phóng xạ'}
+                  title={bullet === undefined ? 'Đã đo' : '???'}
                 />
               ))}
             </div>
-            <p className="bullets-count">Còn {bulletsLeft}/6 viên</p>
+            <p className="bullets-count">Còn {bulletsLeft} vị trí chưa đo</p>
+            <p style={{fontSize: '12px', color: '#9CA3AF', marginTop: '4px'}}>
+              🌊 Đợt sóng #{waveNumber-1}
+            </p>
           </div>
 
           <div className="players-section">
@@ -261,7 +290,9 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
                   </svg>
                 </div>
                 <h2>Rút Lá Bài Lý Thuyết</h2>
-                <p>Người chơi sẽ rút bài và đọc to câu lý thuyết</p>
+                <p>
+                  <strong>{currentPlayer?.name}</strong> sẽ tiếp cận lõi nghiên cứu và đọc dữ liệu
+                </p>
                 <button className="btn btn-primary btn-large" onClick={drawTheory}>
                   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21.47 4.35l-1.34-.56v9.03l2.43-5.86c.41-1.02-.06-2.19-1.09-2.61zm-19.5 3.7L6.93 20a2.01 2.01 0 0 0 1.81 1.26c.26 0 .53-.05.79-.16l7.37-3.05c.75-.32 1.22-1.06 1.22-1.92v-10.2l-2.43 5.86c-.41 1.02-1.59 1.63-2.59 1.22l-.25-.1a2.04 2.04 0 0 0-1.94.41l-8.96 4.92c-.83.46-1.71-.14-1.77-1.02l-.29-5.92zm15.03 9.48l-2.26-5.95-1.74 3.04 2.26 5.95 1.74-3.04zm-11.57-.8l-2.26-5.95-1.74 3.04 2.26 5.95 1.74-3.04z"/>
@@ -283,23 +314,7 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
                   <p className="theory-statement">
                     "{currentTheory.statement}"
                   </p>
-                  <span className={`theory-truth ${currentTheory.isTrue ? 'true' : 'false'}`}>
-                    {currentTheory.isTrue ? (
-                      <>
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                        Thực tế: ĐÚNG
-                      </>
-                    ) : (
-                      <>
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
-                        </svg>
-                        Thực tế: SAI
-                      </>
-                    )}
-                  </span>
+                  {/* Giấu đáp án - không hiển thị true/false */}
                 </div>
                 <div className="timer-display">{timer}s</div>
                 <p style={{marginBottom: '20px'}}>Người khác có thể bắt bài!</p>
@@ -358,16 +373,16 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
               <div className="stage-content fade-in">
                 <div className="stage-icon shake">
                   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M7 5h10v2h1V5c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2h1V5zm10 14H7v-4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v4zm2-6v6c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2v-6h2v6h10v-6h2zM7 9v4h10V9H7z"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
                   </svg>
                 </div>
-                <h2>Giai Đoạn Bóp Cò</h2>
+                <h2>Giai Đoạn Đo Đạc</h2>
                 <p className="shooter-name">
-                  {players[shooterIndex]?.name} phải bóp cò!
+                  {players[shooterIndex]?.name} phải tiếp cận lõi và đo đạc!
                 </p>
 
                 <div className="shield-selection">
-                  <h4>Chọn Lá Chắn (Tùy chọn)</h4>
+                  <h4>Chọn Giáp Bảo Vệ (Tùy chọn)</h4>
                   <div className="shield-buttons">
                     <button 
                       className={`shield-btn paper ${selectedShield === 'paper' ? 'active' : ''}`}
@@ -377,7 +392,7 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
                       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/>
                       </svg>
-                      <div>Giấy</div>
+                      <div>Giáp Giấy</div>
                       <div className="shield-desc">Chặn α</div>
                     </button>
                     <button 
@@ -388,7 +403,7 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
                       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
                       </svg>
-                      <div>Nhôm</div>
+                      <div>Giáp Nhôm</div>
                       <div className="shield-desc">Chặn α, β</div>
                     </button>
                     <button 
@@ -400,7 +415,7 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
                         <circle cx="12" cy="12" r="5"/>
                       </svg>
-                      <div>Chì</div>
+                      <div>Giáp Chì</div>
                       <div className="shield-desc">Chặn tất cả</div>
                     </button>
                   </div>
@@ -411,9 +426,9 @@ function GameScreen({ players, setPlayers, onGameEnd, customQuestions }) {
                   onClick={handleShoot}
                 >
                   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M7 5h10v2h1V5c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2h1V5zm10 14H7v-4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v4zm2-6v6c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2v-6h2v6h10v-6h2zM7 9v4h10V9H7z"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
                   </svg>
-                  BÓP CÒ
+                  ĐI ĐO ĐẠC
                 </button>
               </div>
             )}

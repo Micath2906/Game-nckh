@@ -60,12 +60,12 @@ function PlayerCard({ player, isActive }) {
       </div>
       
       <div className="shields-container">
-        <div className="stat-label" aria-hidden="true">Lá chắn bảo vệ</div>
-        <div className="shields" role="group" aria-label="Lá chắn">
+        <div className="stat-label" aria-hidden="true">Giáp bảo vệ</div>
+        <div className="shields" role="group" aria-label="Giáp">
           <div 
             className={`shield-item paper ${!player.shields.paper ? 'used' : ''}`} 
             title="Chặn tia Alpha"
-            aria-label={`Giấy - ${player.shields.paper ? 'Còn' : 'Đã dùng'}`}
+            aria-label={`Giáp Giấy - ${player.shields.paper ? 'Còn' : 'Đã dùng'}`}
           >
             <div className="shield-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -78,7 +78,7 @@ function PlayerCard({ player, isActive }) {
           <div 
             className={`shield-item aluminum ${!player.shields.aluminum ? 'used' : ''}`} 
             title="Chặn tia Alpha & Beta"
-            aria-label={`Nhôm - ${player.shields.aluminum ? 'Còn' : 'Đã dùng'}`}
+            aria-label={`Giáp Nhôm - ${player.shields.aluminum ? 'Còn' : 'Đã dùng'}`}
           >
             <div className="shield-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -91,7 +91,7 @@ function PlayerCard({ player, isActive }) {
           <div 
             className={`shield-item lead ${!player.shields.lead ? 'used' : ''}`} 
             title="Chặn tất cả tia"
-            aria-label={`Chì - ${player.shields.lead ? 'Còn' : 'Đã dùng'}`}
+            aria-label={`Giáp Chì - ${player.shields.lead ? 'Còn' : 'Đã dùng'}`}
           >
             <div className="shield-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -105,21 +105,30 @@ function PlayerCard({ player, isActive }) {
         </div>
       </div>
 
-      {player.hints.length > 0 && (
-        <div className="hints-section" role="region" aria-label="Gợi ý đã thu thập">
+      {player.hints && player.hints.length > 0 && (
+        <div className="hints-section" role="region" aria-label="Gợi ý bí mật">
           <div className="hints-header">
             <div className="hint-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>
               </svg>
             </div>
-            <span className="hint-label">Gợi ý thu được</span>
+            <span className="hint-label">🔒 Gợi ý bí mật (chỉ bạn xem)</span>
           </div>
           <div className="hints-list">
-            {player.hints.map((hint, index) => (
-              <div key={index} className="hint-item">
-                <span className="hint-bullet" aria-hidden="true">▸</span>
-                {hint}
+            {player.hints.map((hintObj, index) => (
+              <div key={index} className="hint-item" style={{background: '#1F2937', padding: '12px', borderRadius: '8px', marginBottom: '8px'}}>
+                <div style={{fontSize: '13px', fontWeight: 'bold', color: '#10B981', marginBottom: '6px'}}>
+                  {typeof hintObj === 'object' && hintObj.waveInfo ? hintObj.waveInfo : 'Gợi ý'}
+                </div>
+                <div style={{fontSize: '12px', color: '#D1D5DB'}}>
+                  {typeof hintObj === 'string' ? hintObj : hintObj.hint}
+                </div>
+                {typeof hintObj === 'object' && hintObj.equation && (
+                  <div style={{fontSize: '11px', color: '#F59E0B', marginTop: '6px', fontStyle: 'italic'}}>
+                    📐 {hintObj.equation}
+                  </div>
+                )}
               </div>
             ))}
           </div>
