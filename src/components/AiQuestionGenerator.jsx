@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { getGeminiApiKey, setGeminiApiKey } from '../utils/apiKeyStorage'
-import { generateQuestionsFromPdf, MAX_QUESTIONS_FREE, MAX_PDF_BYTES } from '../services/gemini'
+import { generateQuestionsFromPdf } from '../services/gemini'
 
 function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
   const [apiKey, setApiKey] = useState('')
@@ -95,7 +95,7 @@ function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
           <span className="ai-panel-icon">🤖</span>
           <div>
             <h4>Tạo câu hỏi bằng Gemini AI</h4>
-            <p>Tương thích Gemini free tier — key từ AI Studio</p>
+            <p>AI tạo câu hỏi đúng/sai theo môn học, có thể kèm PDF</p>
           </div>
         </div>
         <button className="ai-panel-close" onClick={onClose} aria-label="Đóng">
@@ -129,11 +129,10 @@ function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
             </button>
           </div>
           <span className="ai-hint">
-            Lấy key miễn phí tại{' '}
+            Lấy API key tại{' '}
             <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">
               Google AI Studio
             </a>
-            {' '}— dùng model Flash-Lite/Flash, không tốn phí trong giới hạn quota
           </span>
         </div>
 
@@ -148,7 +147,7 @@ function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
               </svg>
-              {pdfFile ? pdfFile.name : `Chọn PDF nếu có (tối đa ${MAX_PDF_BYTES / (1024 * 1024)}MB)`}
+              {pdfFile ? pdfFile.name : 'Chọn PDF nếu có'}
             </button>
             {pdfFile && (
               <button
@@ -160,9 +159,7 @@ function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
               </button>
             )}
           </div>
-          <span className="ai-hint">
-            Không có PDF thì AI tạo theo môn học. PDF lớn tốn quota free tier — nên dùng file ngắn.
-          </span>
+          <span className="ai-hint">Không có PDF thì AI tạo theo môn học và nội dung focus</span>
           <input
             ref={pdfInputRef}
             type="file"
@@ -178,15 +175,10 @@ function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
             id="question-count"
             type="number"
             className="ai-input"
-            min={5}
-            max={MAX_QUESTIONS_FREE}
+            min={1}
             value={questionCount}
-            onChange={(e) => {
-              const val = Number(e.target.value)
-              setQuestionCount(Math.min(Math.max(val || 5, 5), MAX_QUESTIONS_FREE))
-            }}
+            onChange={(e) => setQuestionCount(Math.max(Number(e.target.value) || 1, 1))}
           />
-          <span className="ai-hint">Free tier: tối đa {MAX_QUESTIONS_FREE} câu/lần</span>
         </div>
 
         <div className="ai-field">
