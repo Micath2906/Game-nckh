@@ -3,13 +3,13 @@ import './styles.css'
 function Navbar({ currentScreen, onNavigate, canGoBack = false, onBack }) {
   const getScreenTitle = () => {
     switch (currentScreen) {
-      case 'subjects': return 'Chọn Môn Học'
+      case 'subjects': return 'ER'
       case 'lessons': return 'Chọn Bài Học'
-      case 'create': return 'Tạo Câu Lý Thuyết'
-      case 'setup': return 'Thiết Lập Game'
+      case 'create': return 'ER'
+      case 'setup': return 'ER'
       case 'playing': return 'Đang Chơi'
       case 'winner': return 'Kết Quả'
-      default: return 'Radiation Bar'
+      default: return 'Getter Saver'
     }
   }
 
@@ -27,7 +27,11 @@ function Navbar({ currentScreen, onNavigate, canGoBack = false, onBack }) {
           )}
           
           <div className="navbar-brand">
-            <span className="navbar-icon">☢️</span>
+            <span className="navbar-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </span>
             <span className="navbar-title">{getScreenTitle()}</span>
           </div>
         </div>
@@ -42,7 +46,7 @@ function Navbar({ currentScreen, onNavigate, canGoBack = false, onBack }) {
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
               </svg>
-              <span>Tạo Câu Lý Thuyết</span>
+              <span>Tạo Bộ Câu Lý Thuyết</span>
             </button>
           )}
 
@@ -54,7 +58,7 @@ function Navbar({ currentScreen, onNavigate, canGoBack = false, onBack }) {
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
               </svg>
-              <span>Duyệt Môn Học</span>
+              <span>Chọn Môn Học</span>
             </button>
           )}
 

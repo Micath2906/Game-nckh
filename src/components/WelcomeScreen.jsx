@@ -9,11 +9,11 @@ function WelcomeScreen({ onCreateQuestions, onBrowseLessons }) {
           <div className="welcome-logo">
             <div className="logo-radiation">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19.8 18.4L14 10.67V6.5l1.35-1.69c.26-.33.03-.81-.39-.81H9.04c-.42 0-.65.48-.39.81L10 6.5v4.17L4.2 18.4c-.49.66-.02 1.6.8 1.6h14c.82 0 1.29-.94.8-1.6z"/>
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
               </svg>
             </div>
-            <h1 className="welcome-title">RADIATION BAR</h1>
-            <p className="welcome-subtitle">Học tập qua trò chơi phóng xạ</p>
+            <h1 className="welcome-title">GETTER SAVER</h1>
+            <p className="welcome-subtitle">Ôn luyện lý thuyết hiệu quả</p>
           </div>
         </div>
 
@@ -57,14 +57,14 @@ function WelcomeScreen({ onCreateQuestions, onBrowseLessons }) {
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
             </svg>
-            <span>Tạo câu lý thuyết</span>
+            <span>Tạo bộ câu lý thuyết</span>
           </button>
           
           <button className="btn btn-secondary btn-large" onClick={onBrowseLessons}>
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
             </svg>
-            <span>Duyệt bài học</span>
+            <span>Chọn bài học</span>
           </button>
         </div>
 

@@ -376,7 +376,7 @@ function CreateQuestions({ onQuestionsReady, onBack }) {
         <div className="subject-select-section">
           <h3 className="section-label">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
             Chọn môn học
           </h3>
@@ -547,7 +547,10 @@ function CreateQuestions({ onQuestionsReady, onBack }) {
                 </h3>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <button className="btn-start-game" style={{ padding: '8px 12px', fontSize: '0.9rem' }} onClick={handleOpenLibrary}>
-                    Thêm bộ câu lý thuyết có sẵn
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style={{ width: '16px', height: '16px', marginRight: '6px', verticalAlign: 'middle' }}>
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    Thêm câu hỏi từ thư viện
                   </button>
                   <button className="btn-create-subject" style={{ padding: '8px 12px', fontSize: '0.9rem' }} onClick={clearAllQuestions} disabled={filteredQuestions.length === 0}>
                     Xóa toàn bộ

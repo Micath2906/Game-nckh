@@ -1060,7 +1060,7 @@
 .logo-icon svg {
   width: 48px;
   height: 48px;
-  fill: white;
+  fill: #1E3A8A;
 }
 
 .game-title {
@@ -3231,7 +3231,7 @@
 .logo-radiation svg {
   width: 64px;
   height: 64px;
-  fill: white;
+  fill: #1E3A8A;
 }
 
 .welcome-title {
@@ -3425,7 +3425,16 @@
 
 .navbar-icon {
   font-size: 2em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   animation: pulse 3s ease-in-out infinite;
+}
+
+.navbar-icon svg {
+  width: 1em;
+  height: 1em;
+  fill: #1E3A8A;
 }
 
 @keyframes pulse {

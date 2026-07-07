@@ -45,10 +45,10 @@ function SetupScreen({ onStartGame }) {
         <div className="game-logo">
           <div className="logo-icon">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19.8 18.4L14 10.67V6.5l1.35-1.69c.26-.33.03-.81-.39-.81H9.04c-.42 0-.65.48-.39.81L10 6.5v4.17L4.2 18.4c-.49.66-.02 1.6.8 1.6h14c.82 0 1.29-.94.8-1.6z"/>
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
           </div>
-          <h1 className="game-title">RADIATION BAR</h1>
+          <h1 className="game-title">GETTER SAVER</h1>
           <p className="game-subtitle">Trò chơi phóng xạ - Ai sẽ sống sót?</p>
         </div>
       </div>
