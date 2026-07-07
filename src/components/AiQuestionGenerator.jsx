@@ -36,6 +36,12 @@ function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
       return
     }
 
+    if (file.size > MAX_PDF_BYTES) {
+      alert(`File PDF vượt quá giới hạn 100MB!`)
+      event.target.value = ''
+      return
+    }
+
     setPdfFile(file)
     setPreviewQuestions([])
     setError('')
@@ -94,7 +100,7 @@ function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
         <div className="ai-panel-title">
           <span className="ai-panel-icon">🤖</span>
           <div>
-            <h4>Tạo câu hỏi bằng Gemini AI</h4>
+            <h4>Tạo câu lý thuyết bằng Gemini AI</h4>
             <p>Tương thích Gemini free tier — key từ AI Studio</p>
           </div>
         </div>
@@ -173,7 +179,7 @@ function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
         </div>
 
         <div className="ai-field ai-field-sm">
-          <label htmlFor="question-count">Số câu hỏi</label>
+          <label htmlFor="question-count">Số câu lý thuyết</label>
           <input
             id="question-count"
             type="number"
@@ -213,14 +219,14 @@ function AiQuestionGenerator({ subjectName, onAddQuestions, onClose }) {
         {loading ? (
           <>
             <span className="ai-spinner" />
-            Đang tạo câu hỏi...
+            Đang tạo câu lý thuyết...
           </>
         ) : (
           <>
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/>
             </svg>
-            Tạo {questionCount} câu hỏi
+            Tạo {questionCount} câu lý thuyết
           </>
         )}
       </button>

@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 
 // Free tier: 2.0 Flash đã ngừng (6/2025). Ưu tiên Flash-Lite (quota cao hơn).
 export const FREE_TIER_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash']
-export const MAX_PDF_BYTES = 10 * 1024 * 1024
+export const MAX_PDF_BYTES = 100 * 1024 * 1024
 export const MAX_QUESTIONS_FREE = 15
 
 function buildPrompt(count, focus, subjectName, hasPdf) {

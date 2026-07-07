@@ -37,7 +37,7 @@ function WelcomeScreen({ onCreateQuestions, onBrowseLessons }) {
               </svg>
             </div>
             <h3>Bài học có sẵn</h3>
-            <p>Hàng trăm câu hỏi lý thuyết được chuẩn bị sẵn</p>
+            <p>Hàng trăm câu lý thuyết được chuẩn bị sẵn</p>
           </div>
 
           <div className="feature-card">
@@ -46,8 +46,8 @@ function WelcomeScreen({ onCreateQuestions, onBrowseLessons }) {
                 <path d="M14.06 9.02l.92.92L5.92 19H5v-.92l9.06-9.06M17.66 3c-.25 0-.51.1-.7.29l-1.83 1.83 3.75 3.75 1.83-1.83c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.2-.2-.45-.29-.71-.29zm-3.6 3.19L3 17.25V21h3.75L17.81 9.94l-3.75-3.75z"/>
               </svg>
             </div>
-            <h3>Tạo câu hỏi</h3>
-            <p>Tự tạo bộ câu hỏi riêng cho nhóm của bạn</p>
+            <h3>Tạo câu lý thuyết</h3>
+            <p>Tự tạo bộ câu lý thuyết riêng cho nhóm của bạn</p>
           </div>
         </div>
 
@@ -57,7 +57,7 @@ function WelcomeScreen({ onCreateQuestions, onBrowseLessons }) {
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
             </svg>
-            <span>Tạo câu hỏi</span>
+            <span>Tạo câu lý thuyết</span>
           </button>
           
           <button className="btn btn-secondary btn-large" onClick={onBrowseLessons}>

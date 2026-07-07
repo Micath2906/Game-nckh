@@ -5,7 +5,7 @@ function Navbar({ currentScreen, onNavigate, canGoBack = false, onBack }) {
     switch (currentScreen) {
       case 'subjects': return 'Chọn Môn Học'
       case 'lessons': return 'Chọn Bài Học'
-      case 'create': return 'Tạo Câu Hỏi'
+      case 'create': return 'Tạo Câu Lý Thuyết'
       case 'setup': return 'Thiết Lập Game'
       case 'playing': return 'Đang Chơi'
       case 'winner': return 'Kết Quả'
@@ -42,7 +42,7 @@ function Navbar({ currentScreen, onNavigate, canGoBack = false, onBack }) {
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
               </svg>
-              <span>Tạo Câu Hỏi</span>
+              <span>Tạo Câu Lý Thuyết</span>
             </button>
           )}
 

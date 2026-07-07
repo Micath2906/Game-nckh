@@ -10,7 +10,7 @@ function QuestionManager({ onQuestionsReady, onBack, subject }) {
 
   const addQuestion = () => {
     if (!currentQuestion.trim()) {
-      alert('Vui lòng nhập câu hỏi!')
+      alert('Vui lòng nhập câu lý thuyết!')
       return
     }
 
@@ -51,7 +51,7 @@ function QuestionManager({ onQuestionsReady, onBack, subject }) {
 
   const handleStart = () => {
     if (questions.length < 5) {
-      alert('Vui lòng thêm ít nhất 5 câu hỏi!')
+      alert('Vui lòng thêm ít nhất 5 câu lý thuyết!')
       return
     }
     onQuestionsReady(questions)
@@ -83,10 +83,10 @@ function QuestionManager({ onQuestionsReady, onBack, subject }) {
         <div className="qm-breadcrumb">
           <span className="breadcrumb-item">Landing</span>
           <span className="breadcrumb-sep">›</span>
-          <span className="breadcrumb-item active">Câu hỏi</span>
+          <span className="breadcrumb-item active">Câu lý thuyết</span>
         </div>
-        <h1 className="qm-title">Ngân hàng câu hỏi</h1>
-        <p className="qm-subtitle">Thêm câu hỏi hoặc dùng câu mẫu có sẵn</p>
+        <h1 className="qm-title">Ngân hàng câu lý thuyết</h1>
+        <p className="qm-subtitle">Thêm câu lý thuyết hoặc dùng câu mẫu có sẵn</p>
       </div>
 
       {/* Side by Side Layout */}
@@ -94,7 +94,7 @@ function QuestionManager({ onQuestionsReady, onBack, subject }) {
         {/* Left Column: Form */}
         <div className="qm-form-section">
           <div className="qm-form-card">
-            <h3 className="qm-form-title">Thêm câu hỏi mới</h3>
+            <h3 className="qm-form-title">Thêm câu lý thuyết mới</h3>
             
             <div className="qm-form-input-group">
               <input 
@@ -146,7 +146,7 @@ function QuestionManager({ onQuestionsReady, onBack, subject }) {
 
           {/* Status & CTA below form on mobile */}
           <div className="qm-status-mobile">
-            <div className="qm-count-badge">{questions.length} câu hỏi</div>
+            <div className="qm-count-badge">{questions.length} câu lý thuyết</div>
             {questions.length >= 5 && (
               <button className="btn btn-start" onClick={handleStart}>
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -161,7 +161,7 @@ function QuestionManager({ onQuestionsReady, onBack, subject }) {
         {/* Right Column: Questions List */}
         <div className="qm-list-section">
           <div className="qm-list-header">
-            <h3 className="qm-list-title">Danh sách câu hỏi</h3>
+            <h3 className="qm-list-title">Danh sách câu lý thuyết</h3>
             <span className="qm-list-count">{questions.length} câu</span>
           </div>
           
@@ -170,8 +170,8 @@ function QuestionManager({ onQuestionsReady, onBack, subject }) {
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 14H9c-.55 0-1-.45-1-1s.45-1 1-1h6c.55 0 1 .45 1 1s-.45 1-1 1z"/>
               </svg>
-              <p>Chưa có câu hỏi nào</p>
-              <span>Thêm câu hỏi hoặc dùng câu mẫu</span>
+              <p>Chưa có câu lý thuyết nào</p>
+              <span>Thêm câu lý thuyết hoặc dùng câu mẫu</span>
             </div>
           ) : (
             <div className="qm-list">
@@ -214,7 +214,7 @@ function QuestionManager({ onQuestionsReady, onBack, subject }) {
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M8 5v14l11-7z"/>
             </svg>
-            TIẾP TỤC VỚI {questions.length} CÂU HỎI
+            TIẾP TỤC VỚI {questions.length} CÂU LÝ THUYẾT
           </button>
         )}
       </div>

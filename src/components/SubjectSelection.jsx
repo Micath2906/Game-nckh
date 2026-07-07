@@ -87,7 +87,7 @@ function SubjectSelection({ onSelectSubject, onCreateQuestions }) {
       <div className="subject-container">
         {/* Header */}
         <div className="subject-header-simple">
-          <p className="subject-subtitle">Chọn môn học để bắt đầu học tập hoặc tạo bộ câu hỏi riêng</p>
+          <p className="subject-subtitle">Chọn môn học để bắt đầu học tập hoặc tạo bộ câu lý thuyết riêng</p>
         </div>
 
         {/* Grade Filter */}

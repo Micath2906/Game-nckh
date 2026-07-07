@@ -97,7 +97,7 @@ function LandingPage({ onStart }) {
               </div>
               <div className="flow-step">
                 <span className="step-num">2</span>
-                <span className="step-text">Đọc câu hỏi</span>
+                <span className="step-text">Đọc câu lý thuyết</span>
               </div>
               <div className="flow-step">
                 <span className="step-num">3</span>
